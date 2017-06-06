@@ -13,7 +13,7 @@ current = zeros(sum,1);
 gates = zeros(junctures,1);
 deltamat = zeros(sum,syn);
 branchcons = zeros(syn,1);
-active = zeros(sum,syn);
+active = -1*ones(sum,syn);
 for k = 1:levels
     if k == 1 % synapses affected directly by retina
         first = 2^(levels);
@@ -27,7 +27,8 @@ for k = 1:levels
                     length = size(activex,1);
                     if length > 0
                         for ii = 1:length
-                            if activex(ii) == dd
+                            if abs(branchcons(activex(ii))) == dd
+                               active(f,activex(ii)) = 1;
                                current(f) = current(f) + conductancemat(f,activex(ii),n)*vst;
                             end
                         end
@@ -36,16 +37,14 @@ for k = 1:levels
                     length2 = size(activei,1);
                     if length2 > 0 
                         for ii = 1:length2
-                            if activei(ii) == dd
+                            if abs(branchcons(activei(ii))) == dd
+                               active(f,activei(ii)) = 1;
                                current(f) = current(f) - (conductancemat(f,activei(ii),n)*vst);
                             end
                         end
                     end
                 end
             end
-            if current(f) > 0
-               active(f,:) = sign(branchcons);
-            end 
         end
         % compute gates
         for ff = 1:jxnret
@@ -67,7 +66,7 @@ for k = 1:levels
     elseif k< levels
         jxnit = 0;
         for i  = 1:(k-1)
-    	    jxnit = jxnit + (2^(levels-i+1))/2;
+            jxnit = jxnit + (2^(levels-i+1))/2;
         end
         jxnfirst = jxnit + 1;
         jxnlev = 2^(levels-k+1)/2;
@@ -83,29 +82,31 @@ for k = 1:levels
                     activex = find(branchcons > 0);
                     length = size(activex,1);
                     if length > 0
-        		       for ii = 1:length
-        		           if activex(ii) == dd
-        		              current(ff) = current(ff) + conductancemat(ff,activex(ii),n)*vst;
-        		           end
-        		       end
+                       for ii = 1:length
+                           if abs(branchcons(activex(ii))) == dd
+                              active(ff,activex(ii)) == 1;
+                              current(ff) = current(ff) + conductancemat(ff,activex(ii),n)*vst;
+                           end
+                       end
                     end
                     activei = find(branchcons < 0);
                     length2 = size(activei,1);
                     if length2 > 0
-        		       for ii = 1:length2
-        		           if activei(ii) == dd
-        		              current(ff) = current(ff) - conductancemat(ff,activei(ii),n)*vst;
-        		           end
-        		       end
+                       for ii = 1:length2
+                           if abs(branchcons(activei(ii))) == dd
+                              active(ff,activei(ii)) == 1;
+                              current(ff) = current(ff) - conductancemat(ff,activei(ii),n)*vst;
+                           end
+                       end
                     end
                 end
             end
             if gates(ff - offset) > 0
                current(ff) = current(ff) + bias;
             end
-            if current(ff) > 0
-               active(ff,:) = sign(branchcons);
-            end
+            %if current(ff) > 0
+            %   active(ff,:) = sign(branchcons);
+            %end
         end
         for gg = jxnfirst:jxnlast
             index = 2*gg;
@@ -131,32 +132,34 @@ for k = 1:levels
                 activex = find(branchcons > 0);
                 length = size(activex,1);
                 if length > 0
-    		        for ii = 1:length
-    		            if activex(ii) == dd
-    		                current(sum) = current(sum) + conductancemat(sum,activex(ii),n)*vst;
-    		            end
-    		        end
+                    for ii = 1:length
+                        if abs(branchcons(activex(ii))) == dd
+                            active(sum,activex(ii)) = 1;
+                            current(sum) = current(sum) + conductancemat(sum,activex(ii),n)*vst;
+                        end
+                    end
                 end
                 activei = find(branchcons < 0);
                 length2 = size(activei,1);
                 if length2 > 0
-        		   for ii = 1:length2
-        		       if activei(ii) == dd
-        		          current(sum) = current(sum) - (conductancemat(sum,activei(ii),n)*vst);
-        		       end
-        		   end
+                   for ii = 1:length2
+                       if abs(branchcons(activei(ii))) == dd
+                          active(sum,activei(ii)) = 1;
+                          current(sum) = current(sum) - (conductancemat(sum,activei(ii),n)*vst);
+                       end
+                   end
                 end
             end
         end
         if gates(junctures-1) == 1
            current(sum) = current(sum) + bias;
+           deltamat(sum,:) = active(sum,:);
         end 
         if current(sum) > 0 &&  isInhibited(junctures,n) ~= 1
-            active(sum,:) = sign(branchcons);
+            %active(sum,:) = sign(branchcons);
             gates(junctures) = 1;
             outtr(n,ind) = outtr(n,ind) + 1;
         end
-        deltamat(sum,:) = active(sum,:);
         if outtr(n,ind) == 1 && assigntable(c,n) ~= 1 % FALSE POS
             %HL case > dpunish the synapses which caused spikes
             for f = 1:sum
@@ -176,8 +179,8 @@ for k = 1:levels
                 end
             end
         elseif outtr(n,ind) == 0 && assigntable(c,n)== 1 % FALSE NEG
-            %if outtr(n,ind) == 0 && assigntable(c,n)== 1
-            % no spike & WAS expected : weakly strengthen path
+        %    %if outtr(n,ind) == 0 && assigntable(c,n)== 1
+           % no spike & WAS expected : weakly strengthen path
             for f = 1:sum
                 X2 = find(deltamat(f,:) == 1);
                 len = size(X2,2);
@@ -187,7 +190,7 @@ for k = 1:levels
                     end
                 end
                 X3 = find(deltamat(f,:) == -1);
-                len = size(X3,2);
+               len = size(X3,2);
                 if len > 0
                     for i = 1:len
                         conductancemat(f,X3(i),n) = condevolvein(conductancemat(f,X3(i),n), vminus,vt1,vt2,writelev,gmax,gmin,1);
@@ -195,6 +198,7 @@ for k = 1:levels
                 end
             end
         elseif outtr(n,ind) == 1 && assigntable(c,n) == 1 % REWARD
+        %if outtr(n,ind) == 1 && assigntable(c,n) == 1 % REWARD
             %if outtr(n,ind) == 1 && assigntable(c,n) == 1 % corr + anti-corr
             % most important step! strongly potentiate correlation . Also weaken all ones not contr (slightly)
             for f = 1:sum

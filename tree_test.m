@@ -19,7 +19,7 @@ for k = 1:levels
                     length = size(activex,1);
                     if length > 0
                         for ii = 1:length
-                            if activex(ii) == dd
+                            if abs(branchcons(activex(ii))) == dd
                                 current(f) = current(f) + conductancemat(f,activex(ii),n)*vst;
                             end
                         end
@@ -28,7 +28,7 @@ for k = 1:levels
                     length2 = size(activei,1);
                     if length2 > 0
                         for ii = 1:length2
-                            if activei(ii) == dd
+                            if abs(branchcons(activei(ii))) == dd
                                 current(f) = current(f) - (conductancemat(f,activei(ii),n)*vst);
                             end
                         end
@@ -45,7 +45,7 @@ for k = 1:levels
     elseif k < levels % forward prop
         jxnit = 0;
         for i  = 1:(k-1)
-    	    jxnit = jxnit + (2^(levels-i+1))/2;
+            jxnit = jxnit + (2^(levels-i+1))/2;
         end
         jxnfirst = jxnit + 1;
         jxnlev = 2^(levels-k+1)/2;
@@ -62,7 +62,7 @@ for k = 1:levels
                     length = size(activex,1);
                     if length > 0
                         for ii = 1:length
-                            if activex(ii) == dd
+                            if abs(branchcons(activex(ii))) == dd
                                 current(ff) = current(ff) + conductancemat(ff,activex(ii),n)*vst;
                             end
                         end
@@ -71,7 +71,7 @@ for k = 1:levels
                     length2 = size(activei,1);
                     if length2 > 0
                         for ii = 1:length2
-                            if activei(ii) == dd
+                            if abs(branchcons(activei(ii))) == dd
                                 current(ff) = current(ff) - (conductancemat(ff,activei(ii),n)*vst);
                             end
                         end
@@ -83,7 +83,7 @@ for k = 1:levels
             end
         end
         for gg = jxnfirst:jxnlast
-	    index = 2*gg;
+        index = 2*gg;
             if current(index) > 0 && current(index-1) > 0 && isInhibited(gg,n) ~= 1
                 gates(gg) = gates(gg) + 1;
             end
@@ -96,7 +96,7 @@ for k = 1:levels
                 length = size(activex,1);
                 if length > 0 
                     for ii = 1:length
-                        if activex(ii) == dd
+                        if abs(branchcons(activex(ii))) == dd
                             current(sum) = current(sum) + conductancemat(sum,activex(ii),n)*vst;
                         end
                     end
@@ -105,7 +105,7 @@ for k = 1:levels
                 length2 = size(activei,1);
                 if length2 > 0
                     for ii = 1:length2
-                        if activei(ii) == dd
+                        if abs(branchcons(activei(ii))) == dd
                             current(sum) = current(sum) - (conductancemat(sum,activei(ii),n)*vst);
                         end
                     end

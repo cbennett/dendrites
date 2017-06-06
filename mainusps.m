@@ -33,7 +33,7 @@ syn = 32; % number of synapses/tree
 nbneurons = 20*K; % number of neurons in pop; should be some multiple of K
 tot = nbtrees*nbneurons*syn;
 spars = 0.1; % probability of any given syn being connected to an input
-negperc = 0.3;
+negperc = 0.35;
 mat = assigntrees(dim,tot,spars,nbneurons,nbtrees,syn,negperc);
 [ne,bra,syn] = size(mat); % m = neurons ; n = number branches per tree; l = syn per branch
 %visualizing retina connectivity
@@ -46,12 +46,12 @@ mat = assigntrees(dim,tot,spars,nbneurons,nbtrees,syn,negperc);
 %nanosynapses & initializationm
 conductancemat = 0.0008*rand(bra,syn,ne);
 deltamat = zeros(bra,syn);
-inhibProb = 0.2;
+inhibProb = 0.3;
 %andnumb = 4;
 %andnumb = (syn/10) -1 ;
 % main arrays
 %trtotal = round(training/10);
-trtotal = 3*K;
+trtotal = 2*K;
 inputspikes = zeros(trtotal*K,dim);
 %thmat = 0.0001*rand(sum,nbneurons);
 outtr = zeros(nbneurons,K*trtotal);
@@ -108,7 +108,7 @@ imagesc(Wout)
 colorbar
 drawnow
 %test patterns
-testsgiven = round(tests/ 10);
+testsgiven = round(tests/ 20);
 prediction = zeros(K,testsgiven);
 inputspikeste = zeros(testsgiven*K,dim);
 outte = zeros(nbneurons,K*testsgiven);
